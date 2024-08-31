@@ -34,6 +34,19 @@ contract ERC20Staking{
         bool isRegistered;          // Whether the user is registered
     }
 
+    // Mapping to store stakers' information
+    mapping(address => Staker) public stakers;
 
+    // Array to store the list of stakers
+    address[] public stakerList;
+
+    // Constructor to initialize contract
+    constructor(IERC20 _stakingToken) {
+        owner = msg.sender; // Set the owner of the contract to the deployer
+        stakingToken = _stakingToken; // Set the staking ERC20 token
+        rewardRate30Days = 3;  // Initialize reward rate for 30 days (3%)
+        rewardRate60Days = 5;  // Initialize reward rate for 60 days (5%)
+        rewardRate90Days = 15; // Initialize reward rate for 90 days (15%)
+    }
 
 }
