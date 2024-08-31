@@ -103,5 +103,63 @@ contract ERC20Staking{
         emit Staked(msg.sender, _amount, stakers[msg.sender].stakingDuration);
     }
 
+// Function to calculate rewards (Example calculation based on simple interest)
+    function calculateRewards(address _staker) public view returns (uint256) {
+        Staker memory staker = stakers[_staker];
+
+        uint256 rewardRate;
+
+        if (staker.stakingDuration == 30 days) {
+            rewardRate = rewardRate30Days;
+        } else if (staker.stakingDuration == 60 days) {
+            rewardRate = rewardRate60Days;
+        } else if (staker.stakingDuration == 90 days) {
+            rewardRate = rewardRate90Days;
+        } else {
+            return 0; // Invalid duration, return 0 rewards
+        }
+
+        // Calculate the rewards using simple interest formula: (Principal * Rate * Time) / 100
+        uint256 rewards = (staker.stakedAmount * rewardRate * staker.stakingDuration) / (100 * 365 days);
+
+        return rewards;
+    }
+
+
+// Withdraw Function
+    function withdraw() public {
+        Staker storage staker = stakers[msg.sender];
+
+        // Ensure the user is registered and has staked
+        require(staker.isRegistered, "User is not registered.");
+        require(staker.hasStaked, "No active stake.");
+
+        // Ensure the staked tokens have not already been withdrawn
+        require(!staker.isStakeWithdrawn, "Staked tokens have already been withdrawn.");
+
+        // Calculate rewards
+        uint256 rewards = calculateRewards(msg.sender);
+        uint256 stakedAmount = staker.stakedAmount;
+
+        // Check if the staking duration has ended
+        if (block.timestamp < staker.stakingTimestamp + staker.stakingDuration) {
+            // Early withdrawal: apply a 15% fee on the rewards
+            uint256 fee = (rewards * earlyWithdrawalFeePercent) / 100;
+            rewards -= fee;
+        }
+
+        // Update staker's status
+        staker.isStakeWithdrawn = true;
+        staker.hasStaked = false;
+
+        // Transfer staked tokens and (remaining) rewards back to the user
+        uint256 totalPayout = stakedAmount + rewards;
+        staker.stakedAmount = 0; // Reset staked amount
+        require(stakingToken.transfer(msg.sender, totalPayout), "Token transfer failed.");
+
+        // Emit Withdraw Event
+        emit Withdrawn(msg.sender, stakedAmount, rewards);
+    }
+
 
 }
