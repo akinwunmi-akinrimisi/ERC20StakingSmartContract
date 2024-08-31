@@ -49,4 +49,30 @@ contract ERC20Staking{
         rewardRate90Days = 15; // Initialize reward rate for 90 days (15%)
     }
 
+// Register Function
+    function register(uint256 _preferredDuration) public {
+        // Convert days to seconds
+        uint256 durationInSeconds = _preferredDuration * 1 days;
+
+        // Ensure the user is not already registered
+        require(!stakers[msg.sender].isRegistered, "Already registered.");
+
+        // Ensure a valid duration is selected
+        require(
+            durationInSeconds == 30 days || durationInSeconds == 60 days || durationInSeconds == 90 days,
+            "Invalid staking duration. Choose 30 days, 60 days, or 90 days."
+        );
+
+        // Register the user with preferred staking duration
+        stakers[msg.sender].stakingDuration = durationInSeconds;
+        stakers[msg.sender].isRegistered = true;
+
+        // Add to the list of stakers
+        stakerList.push(msg.sender);
+
+        // Emit event for registration
+        emit Registered(msg.sender, durationInSeconds);
+    }
+
+
 }
