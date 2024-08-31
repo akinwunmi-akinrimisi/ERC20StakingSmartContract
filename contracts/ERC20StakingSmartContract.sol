@@ -161,5 +161,27 @@ contract ERC20Staking{
         emit Withdrawn(msg.sender, stakedAmount, rewards);
     }
 
+// Function to view potential rewards before staking
+    function viewPotentialRewards(uint256 _amount, uint256 _duration) public view returns (uint256) {
+        uint256 durationInSeconds = _duration * 1 days;
+        uint256 rewardRate;
+
+        // Determine the reward rate based on the provided staking duration
+        if (durationInSeconds == 30 days) {
+            rewardRate = rewardRate30Days;
+        } else if (durationInSeconds == 60 days) {
+            rewardRate = rewardRate60Days;
+        } else if (durationInSeconds == 90 days) {
+            rewardRate = rewardRate90Days;
+        } else {
+            return 0; // Invalid duration, return 0 rewards
+        }
+
+        // Calculate the potential rewards using the simple interest formula
+        uint256 potentialRewards = (_amount * rewardRate * durationInSeconds) / (100 * 365 days);
+
+        return potentialRewards;
+    }
+
 
 }
