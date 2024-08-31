@@ -74,5 +74,34 @@ contract ERC20Staking{
         emit Registered(msg.sender, durationInSeconds);
     }
 
+// Stake Function
+    function stake(uint256 _amount) public {
+        // Ensure the user is registered
+        require(stakers[msg.sender].isRegistered, "User is not registered.");
+
+        // Validate Staking Amount
+        require(_amount > 0, "Staking amount must be greater than zero.");
+
+        // Check for Existing Active Stake
+        require(!stakers[msg.sender].hasStaked, "Already have an active stake.");
+
+        // Transfer tokens from user to contract
+        require(stakingToken.transferFrom(msg.sender, address(this), _amount), "Token transfer failed.");
+
+        // Update Staking Information
+        stakers[msg.sender].stakedAmount = _amount;
+        stakers[msg.sender].stakingTimestamp = block.timestamp;
+        stakers[msg.sender].rewards = 0;
+        stakers[msg.sender].hasStaked = true;
+        stakers[msg.sender].isStakeWithdrawn = false;
+        stakers[msg.sender].isRewardWithdrawn = false;
+
+        // Update total staked tokens
+        totalStaked += _amount;
+
+        // Emit Staked Event
+        emit Staked(msg.sender, _amount, stakers[msg.sender].stakingDuration);
+    }
+
 
 }
