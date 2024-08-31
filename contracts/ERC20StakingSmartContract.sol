@@ -11,9 +11,9 @@ interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
-contract ERC20Staking{
+contract ERC20Staking {
 
-// State Variables
+    // State Variables
     address public owner; // Owner Address
     IERC20 public stakingToken; // The ERC20 token to be staked
     uint256 public rewardRate30Days; // Reward Rate for 30 days
@@ -49,7 +49,7 @@ contract ERC20Staking{
         rewardRate90Days = 15; // Initialize reward rate for 90 days (15%)
     }
 
-// Register Function
+    // Register Function
     function register(uint256 _preferredDuration) public {
         // Convert days to seconds
         uint256 durationInSeconds = _preferredDuration * 1 days;
@@ -74,7 +74,7 @@ contract ERC20Staking{
         emit Registered(msg.sender, durationInSeconds);
     }
 
-// Stake Function
+    // Stake Function
     function stake(uint256 _amount) public {
         // Ensure the user is registered
         require(stakers[msg.sender].isRegistered, "User is not registered.");
@@ -103,7 +103,7 @@ contract ERC20Staking{
         emit Staked(msg.sender, _amount, stakers[msg.sender].stakingDuration);
     }
 
-// Function to calculate rewards (Example calculation based on simple interest)
+    // Function to calculate rewards (Example calculation based on simple interest)
     function calculateRewards(address _staker) public view returns (uint256) {
         Staker memory staker = stakers[_staker];
 
@@ -125,8 +125,7 @@ contract ERC20Staking{
         return rewards;
     }
 
-
-// Withdraw Function
+    // Withdraw Function
     function withdraw() public {
         Staker storage staker = stakers[msg.sender];
 
@@ -161,7 +160,7 @@ contract ERC20Staking{
         emit Withdrawn(msg.sender, stakedAmount, rewards);
     }
 
-// Function to view potential rewards before staking
+    // Function to view potential rewards before staking
     function viewPotentialRewards(uint256 _amount, uint256 _duration) public view returns (uint256) {
         uint256 durationInSeconds = _duration * 1 days;
         uint256 rewardRate;
@@ -183,5 +182,21 @@ contract ERC20Staking{
         return potentialRewards;
     }
 
+    // Function to get the staker's balance (staked amount and calculated rewards)
+    function getStakerBalance(address _staker) public view returns (uint256, uint256) {
+        Staker memory staker = stakers[_staker];
+        uint256 stakedAmount = staker.stakedAmount;
+        uint256 rewards = calculateRewards(_staker);
+        return (stakedAmount, rewards);
+    }
 
+    // Function to get the contract balance of the staking token
+    function getContractBalance() public view returns (uint256) {
+        return stakingToken.balanceOf(address(this));
+    }
+
+    // Event declarations
+    event Registered(address indexed user, uint256 preferredDuration);
+    event Staked(address indexed user, uint256 amount, uint256 duration);
+    event Withdrawn(address indexed user, uint256 stakedAmount, uint256 rewards);
 }
